@@ -39,10 +39,22 @@
 npm install -g @harshvz/crawler
 ```
 
+**Note**: Chromium browser will be automatically downloaded during installation (approximately 300MB). This is required for web scraping functionality.
+
 ### As a Project Dependency
 
 ```bash
 npm install @harshvz/crawler
+```
+
+**Note**: The postinstall script will automatically download the Chromium browser.
+
+### Manual Browser Installation (if needed)
+
+If the automatic installation fails, you can manually install browsers:
+
+```bash
+npx playwright install chromium
 ```
 
 ### From Source

@@ -164,7 +164,16 @@ class ScrapperServices {
     useBrowser = async (
         endpoint: string = "/"
     ) => {
-        const browser = await chromium.launch();
+        let browser;
+        try {
+            browser = await chromium.launch();
+        } catch (error: any) {
+            console.error('\n❌ Error: Chromium browser not found!');
+            console.error('Please install Playwright browsers by running:');
+            console.error('  npx playwright install chromium\n');
+            throw error;
+        }
+
         const page = await browser.newPage();
 
         // Properly construct URL to avoid double slashes

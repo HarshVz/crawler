@@ -8,6 +8,8 @@
 npm install -g @harshvz/crawler
 ```
 
+> **📥 Note**: During installation, Chromium browser (~300MB) will be automatically downloaded. This is required for scraping functionality and only needs to be done once.
+
 ### Run the Scraper
 
 ```bash

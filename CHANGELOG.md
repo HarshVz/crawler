@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TypeScript support
 - CLI tool via npm bin
 - Programmatic API usage
+- **Automatic Chromium browser installation** via postinstall script
+- Better error messages for missing browser installations
 
 ### Features
 - **ScrapperServices class**: Main scraping service
