@@ -6,7 +6,7 @@ inquirer.prompt([
     {
         type: 'input',
         name: 'url',
-        message: 'Enter URL to scrape',
+        message: 'Enter URL to scrape: ',
         validate: (input) => {
             if (!input) {
                 return 'Please enter a URL';
