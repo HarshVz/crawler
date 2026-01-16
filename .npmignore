@@ -1,0 +1,35 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Development files
+.vscode/
+.idea/
+*.log
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+
+# Build
+tsconfig.json
+tsconfig.*.json
+
+# Misc
+.DS_Store
+Thumbs.db
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+
+# Development tools
+nodemon.json
+.eslintrc*
+.prettierrc*
