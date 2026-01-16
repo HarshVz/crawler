@@ -79,7 +79,20 @@ scraper
 
 You'll be prompted to enter:
 1. **URL**: The website URL to scrape (e.g., `https://example.com`)
-2. **Algorithm**: Choose between `bfs` or `dfs`
+2. **Algorithm**: Choose between `bfs` or `dfs` (default: bfs)
+3. **Output Directory**: Custom save location (default: `~/knowledgeBase`)
+
+### Command-Line Flags
+
+```bash
+# Show version
+scraper --version
+scraper -v
+
+# Show help
+scraper --help
+scraper -h
+```
 
 ### Programmatic Usage
 
@@ -119,12 +132,13 @@ Main class for web scraping operations.
 #### Constructor
 
 ```typescript
-new ScrapperServices(website: string, depth?: number)
+new ScrapperServices(website: string, depth?: number, customPath?: string)
 ```
 
 **Parameters:**
 - `website` (string): The base URL of the website to scrape
 - `depth` (number, optional): Maximum depth to crawl (0 = unlimited, default: 0)
+- `customPath` (string, optional): Custom output directory path (default: `~/knowledgeBase`)
 
 #### Methods
 
@@ -230,6 +244,18 @@ const results = [];
 const visited = {};
 await scraper.bfsScrape('/docs', results, visited);
 console.log(`Scraped ${results.length} pages`);
+```
+
+### Example 4: Custom Output Directory
+
+```typescript
+const scraper = new ScrapperServices(
+    'https://example.com',
+    0,  // No depth limit
+    '/custom/output/path'  // Custom save location
+);
+await scraper.bfsScrape('/');
+// Files will be saved to /custom/output/path instead of ~/knowledgeBase
 ```
 
 ## 🔧 Development

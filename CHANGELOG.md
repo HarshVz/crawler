@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - TBD
+
+### Added
+- `--version` / `-v` flag to display package version
+- `--help` / `-h` flag to display usage information
+- Custom output directory support via interactive prompt
+- URL validation in interactive prompts
+- Better user experience with emojis and clearer messages
+- Default values for algorithm (bfs) and output path
+
+### Changed
+- Improved prompt messages for better clarity
+- Enhanced error messages with visual indicators (✅, ❌)
+- Updated ScrapperServices constructor to accept optional `customPath` parameter
+
+### Fixed
+- Fixed typo: "Scrapping" → "Scraping" throughout the codebase
+
+## [1.0.1] - 2026-01-16
+
+### Fixed
+- Minor UI improvement to prompt message formatting
+
 ## [1.0.0] - 2026-01-16
 
 ### Added

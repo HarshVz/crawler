@@ -9,9 +9,9 @@ class ScrapperServices {
     timeout: number;
     depth: number;
 
-    constructor(website: string, depth: number = 0) {
+    constructor(website: string, depth: number = 0, customPath?: string) {
         this.website = website;
-        this.path = path.join(os.homedir(), "knowledgeBase");
+        this.path = customPath || path.join(os.homedir(), "knowledgeBase");
         this.timeout = 60000;
         this.depth = depth;
 
