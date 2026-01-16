@@ -74,6 +74,10 @@ npm install -g .
 Simply run the command and follow the prompts:
 
 ```bash
+# Primary command (recommended)
+crawler
+
+# Alternative (for backward compatibility)
 scraper
 ```
 
@@ -86,13 +90,15 @@ You'll be prompted to enter:
 
 ```bash
 # Show version
-scraper --version
-scraper -v
+crawler --version
+crawler -v
 
 # Show help
-scraper --help
-scraper -h
+crawler --help
+crawler -h
 ```
+
+> **Note**: Both `crawler` and `scraper` commands work identically. We recommend using `crawler` for new projects.
 
 ### Programmatic Usage
 
@@ -119,7 +125,7 @@ npm run dev
 # Build the project
 npm run build
 
-# Start the built version
+# Start the built version (uses crawler command)
 npm start
 ```
 

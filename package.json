@@ -6,7 +6,8 @@
     "types": "dist/index.d.ts",
     "type": "module",
     "bin": {
-        "scraper": "./dist/index.js"
+        "scraper": "./dist/index.js",
+        "crawler": "./dist/index.js"
     },
     "scripts": {
         "dev": "nodemon --watch src --exec node --loader ts-node/esm src/index.ts",
