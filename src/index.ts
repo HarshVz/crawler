@@ -70,7 +70,7 @@ inquirer.prompt([
         type: 'input',
         name: 'depth',
         message: 'Enter depth to scrape (-1 for infinite): ',
-        default: '-1',
+        default: -1,
         validate: (input) => {
             if (!input && typeof input !== 'number') {
                 return 'Please enter a depth';
