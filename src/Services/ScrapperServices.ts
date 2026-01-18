@@ -9,7 +9,7 @@ class ScrapperServices {
     timeout: number;
     depth: number;
 
-    constructor(website: string, depth: number = 0, customPath?: string) {
+    constructor(website: string, depth: number = -1, customPath?: string) {
         this.website = website;
         this.path = customPath || path.join(os.homedir(), "knowledgeBase");
         this.timeout = 60000;
@@ -26,9 +26,7 @@ class ScrapperServices {
 
         const hostname = new URL(this.website).hostname;
         const folderName = hostname.replace(/[^a-zA-Z0-9]/g, "");
-        // console.log(this.path);
         const screenshotsDir = path.join(this.path, folderName);
-        // console.log(screenshotsDir);
         if (!fs.existsSync(screenshotsDir)) {
             fs.mkdirSync(screenshotsDir, { recursive: true });
         }
@@ -112,7 +110,7 @@ class ScrapperServices {
             visited[current] = true;
 
             const curr_depth = this.countBackslashes(current);
-            if (this.depth != 0) {
+            if (this.depth != -1) {
                 if (curr_depth > this.depth) continue;
             }
 
@@ -144,7 +142,7 @@ class ScrapperServices {
                 visited[current] = true;
 
                 const curr_depth = this.countBackslashes(current);
-                if (this.depth != 0) {
+                if (this.depth != -1) {
                     if (curr_depth > this.depth) continue;
                 }
 

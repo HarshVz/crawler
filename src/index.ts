@@ -68,6 +68,21 @@ inquirer.prompt([
     },
     {
         type: 'input',
+        name: 'depth',
+        message: 'Enter depth to scrape (-1 for infinite): ',
+        default: -1,
+        validate: (input) => {
+            if (!input && typeof input !== 'number') {
+                return 'Please enter a depth';
+            }
+            if (Number(input) < -1) {
+                return 'Please enter a valid depth';
+            }
+            return true;
+        }
+    },
+    {
+        type: 'input',
         name: 'algo',
         message: 'Enter algorithm to use (bfs or dfs): ',
         default: 'bfs',
@@ -99,10 +114,11 @@ inquirer.prompt([
     console.log("Scraping started");
     console.log(`URL: ${answers.url}`);
     console.log(`Algorithm: ${answers.algo.toUpperCase()}`);
+    console.log(`Depth: ${answers.depth}`);
     console.log(`Output: ${answers.outputPath}`);
     console.log("-".repeat(20));
 
-    const scrapper = new ScrapperServices(answers.url, 0, answers.outputPath);
+    const scrapper = new ScrapperServices(answers.url, Number(answers.depth), answers.outputPath);
 
     try {
         const url = new URL(answers.url);
