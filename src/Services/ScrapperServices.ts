@@ -209,6 +209,7 @@ class ScrapperServices {
 
         const tags = page.locator("h1, h2, h3, h4, h5, h6, p, span");
         const texts = await tags.allTextContents();
+        console.log(texts);
 
 
         //2. build path and take screenshot.
