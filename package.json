@@ -1,6 +1,6 @@
 {
     "name": "@harshvz/crawler",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "A powerful web scraping tool built with Playwright that crawls websites using BFS or DFS algorithms, captures screenshots, and extracts content",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
