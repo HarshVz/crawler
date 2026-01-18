@@ -1,3 +1,4 @@
+![npm version](https://i.imgur.com/HGltGRl.jpeg)
 # 🕷️ @harshvz/crawler
 
 > A powerful web scraping tool built with Playwright that crawls websites using BFS or DFS algorithms, captures screenshots, and extracts content.

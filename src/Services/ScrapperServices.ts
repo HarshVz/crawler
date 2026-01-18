@@ -8,12 +8,14 @@ class ScrapperServices {
     path: string;
     timeout: number;
     depth: number;
+    format: string;
 
-    constructor(website: string, depth: number = -1, customPath?: string) {
+    constructor(website: string, depth: number = -1, customPath?: string, format: string = "md") {
         this.website = website;
         this.path = customPath || path.join(os.homedir(), "knowledgeBase");
         this.timeout = 60000;
         this.depth = depth;
+        this.format = format;
 
         if (!fs.existsSync(this.path)) {
             fs.mkdirSync(this.path, { recursive: true });
@@ -95,6 +97,26 @@ class ScrapperServices {
 
     countBackslashes = (path: string) => {
         return path.split('/').length - 1;
+    }
+
+    /**
+     * Extracts structured content from the page with tag names and text
+     * @param page - Playwright Page object
+     * @returns Array of objects with tag name and text content
+     */
+    extractStructuredContent = async (page: Page): Promise<Array<{ tag: string; text: string }>> => {
+        const structuredData = await page.$$eval(
+            "h1, h2, h3, h4, h5, h6, p, span, li, a, strong, em, code, pre",
+            (elements) => {
+                return elements
+                    .map(el => ({
+                        tag: el.tagName.toLowerCase(),
+                        text: el.textContent?.trim() || ""
+                    }))
+                    .filter(item => item.text.length > 0); // Filter out empty elements
+            }
+        );
+        return structuredData;
     }
 
     dfsScrape = async (
@@ -207,28 +229,63 @@ class ScrapperServices {
             ).catch(() => ({}))
         };
 
-        const tags = page.locator("h1, h2, h3, h4, h5, h6, p, span");
-        const texts = await tags.allTextContents();
-        console.log(texts);
-
+        // Extract structured content
+        const structuredContent = await this.extractStructuredContent(page);
 
         //2. build path and take screenshot.
         const filePath = this.buildFilePath(endpoint);
-        // console.log(filePath)
         await page.screenshot({
             path: filePath,
             fullPage: true
         });
 
+        // Save structured data as JSON
         const contentPath = this.buildContentPath(endpoint);
-        this.writeFile(contentPath, JSON.stringify(metadata) + "\n" + texts.join("\n"));
-        // console.log(`started scraping ${endpoint}`);
+        const jsonPath = contentPath.replace('.md', '.json');
+
+        const fullData = {
+            metadata,
+            content: structuredContent
+        };
+
+        if (this.format === "json") this.writeFile(jsonPath, JSON.stringify(fullData, null, 2));
+
+        // Also save a formatted markdown version
+        let markdownContent = this.toMarkdown(metadata, endpoint, structuredContent);
+        if (this.format === "md") this.writeFile(contentPath, markdownContent);
 
         //scrape current page Links;
         const links = await this.getLinks(page);
         await browser.close()
-        // console.log(`completed scraping ${endpoint} - found ${links.length} unique internal links`);
         return links;
+    }
+
+    toMarkdown(metadata: any, endpoint: string, structuredContent: any) {
+        // Also save a formatted markdown version
+        let markdownContent = `# ${metadata.title}\n\n`;
+        markdownContent += `**URL:** ${endpoint}\n\n`;
+        if (metadata.description) {
+            markdownContent += `**Description:** ${metadata.description}\n\n`;
+        }
+        markdownContent += `---\n\n`;
+
+        // Format structured content as markdown
+        structuredContent.forEach((item: any) => {
+            if (item.tag.startsWith('h')) {
+                const level = parseInt(item.tag.charAt(1));
+                markdownContent += `${'#'.repeat(level)} ${item.text}\n\n`;
+            } else if (item.tag === 'p') {
+                markdownContent += `${item.text}\n\n`;
+            } else if (item.tag === 'li') {
+                markdownContent += `- ${item.text}\n`;
+            } else if (item.tag === 'code' || item.tag === 'pre') {
+                markdownContent += `\`${item.text}\`\n\n`;
+            } else {
+                markdownContent += `${item.text}\n`;
+            }
+        });
+
+        return markdownContent;
     }
 }
 

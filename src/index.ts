@@ -98,6 +98,21 @@ inquirer.prompt([
     },
     {
         type: 'input',
+        name: 'format',
+        message: 'Enter format to use (json or md): ',
+        default: 'md',
+        validate: (input) => {
+            if (!input) {
+                return 'Please enter a format';
+            }
+            if (input !== 'json' && input !== 'md') {
+                return 'Please enter either "json" or "md"';
+            }
+            return true;
+        }
+    },
+    {
+        type: 'input',
         name: 'outputPath',
         message: 'Enter output directory (press Enter for default): ',
         default: join(os.homedir(), 'knowledgeBase'),
@@ -114,11 +129,12 @@ inquirer.prompt([
     console.log("Scraping started");
     console.log(`URL: ${answers.url}`);
     console.log(`Algorithm: ${answers.algo.toUpperCase()}`);
+    console.log(`Format: ${answers.format.toUpperCase()}`);
     console.log(`Depth: ${answers.depth}`);
     console.log(`Output: ${answers.outputPath}`);
     console.log("-".repeat(20));
 
-    const scrapper = new ScrapperServices(answers.url, Number(answers.depth), answers.outputPath);
+    const scrapper = new ScrapperServices(answers.url, Number(answers.depth), answers.outputPath, answers.format);
 
     try {
         const url = new URL(answers.url);
