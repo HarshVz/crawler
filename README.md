@@ -1,7 +1,7 @@
 ![npm version](https://i.imgur.com/HGltGRl.jpeg)
 # 🕷️ @harshvz/crawler
 
-> A powerful web scraping tool built with Playwright that crawls websites using BFS or DFS algorithms, captures screenshots, and extracts content.
+> A lightweight, stealthy web scraping tool powered by Obscura (headless browser) that crawls websites using BFS or DFS algorithms and extracts structured content.
 
 [![npm version](https://img.shields.io/npm/v/@harshvz/crawler.svg)](https://www.npmjs.com/package/@harshvz/crawler)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
@@ -16,6 +16,7 @@
 - [Configuration](#-configuration)
 - [Output Structure](#-output-structure)
 - [Examples](#-examples)
+- [Limitations](#-limitations)
 - [Development](#-development)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -23,14 +24,18 @@
 ## ✨ Features
 
 - 🔍 **Intelligent Crawling**: Choose between BFS (Breadth-First Search) or DFS (Depth-First Search) algorithms
-- 📸 **Full Page Screenshots**: Automatically captures full-page screenshots of each visited page
-- 📝 **Content Extraction**: Extracts metadata, headings, paragraphs, and text content
+- 📝 **Content Extraction**: Extracts metadata, headings, paragraphs, links, images, and all text content
 - 🎯 **Domain-Scoped**: Only crawls internal links within the same domain
 - 🚀 **Interactive CLI**: User-friendly command-line interface with input validation
-- 💾 **Organized Storage**: Saves screenshots and content in a structured directory format
+- 💾 **Multiple Output Formats**: Save as Markdown, JSON, or CSV
+- 🏷️ **Custom Tag Selectors**: Limit extraction to specific HTML tags or CSS selectors
+- ⏱️ **Configurable Delay**: Set delay between requests to avoid overwhelming servers
+- 🕵️ **Stealth & Anti-Detection**: Masks automation flags, spoofs navigator properties, realistic User-Agent
+- 🔒 **Tracker Blocking**: Blocks analytics domains and unnecessary resource types for faster, private crawling
 - 🔄 **Duplicate Prevention**: Tracks visited URLs to avoid redundant scraping
 - 🎨 **SEO Metadata**: Extracts Open Graph, Twitter Cards, and other meta tags
 - ⏱️ **Timeout Handling**: Built-in timeout management for unresponsive pages
+- 🪶 **Lightweight Browser**: Uses Obscura — a lightweight headless browser via CDP (no heavy Chromium download needed)
 
 ## 📦 Installation
 
@@ -40,22 +45,10 @@
 npm install -g @harshvz/crawler
 ```
 
-**Note**: Chromium browser will be automatically downloaded during installation (approximately 300MB). This is required for web scraping functionality.
-
 ### As a Project Dependency
 
 ```bash
 npm install @harshvz/crawler
-```
-
-**Note**: The postinstall script will automatically download the Chromium browser.
-
-### Manual Browser Installation (if needed)
-
-If the automatic installation fails, you can manually install browsers:
-
-```bash
-npx playwright install chromium
 ```
 
 ### From Source
@@ -67,6 +60,8 @@ npm install
 npm run build
 npm install -g .
 ```
+
+> **Note**: This package uses **Obscura** — a lightweight headless browser connected via CDP. It is significantly faster and smaller than Chromium. The only limitation is that it does not support screenshots (headless-only).
 
 ## 🚀 Usage
 
@@ -85,7 +80,11 @@ scraper
 You'll be prompted to enter:
 1. **URL**: The website URL to scrape (e.g., `https://example.com`)
 2. **Algorithm**: Choose between `bfs` or `dfs` (default: bfs)
-3. **Output Directory**: Custom save location (default: `~/knowledgeBase`)
+3. **Format**: Output format — `md`, `json`, or `csv` (default: md)
+4. **Depth**: Maximum crawl depth (-1 for infinite)
+5. **Delay**: Milliseconds to wait between requests (0 for none)
+6. **Tags**: Custom HTML tags or CSS selectors to extract (comma-separated, blank for all)
+7. **Output Directory**: Custom save location (default: `~/knowledgeBase`)
 
 ### Command-Line Flags
 
@@ -104,15 +103,22 @@ crawler -h
 ### Programmatic Usage
 
 ```typescript
-import ScrapperServices from '@harshvz/crawler';
+import Scraper from '@harshvz/crawler';
 
-const scraper = new ScrapperServices('https://example.com', 2); // depth limit of 2
+const scraper = new Scraper('https://example.com', {
+  depth: 2,
+  format: 'md',
+  delay: 500,
+  tags: 'h1, p, a, img',
+});
 
 // Using BFS
-await scraper.bfsScrape('/');
+const results = await scraper.bfs('/');
 
 // Using DFS
-await scraper.dfsScrape('/');
+const results = await scraper.dfs('/');
+
+await scraper.close();
 ```
 
 ## 🛠️ CLI Commands
@@ -126,69 +132,109 @@ npm run dev
 # Build the project
 npm run build
 
-# Start the built version (uses crawler command)
+# Start the built version
 npm start
 ```
 
 ## 📚 API Documentation
 
-### `ScrapperServices`
+### `Scraper` (Main Orchestrator)
 
-Main class for web scraping operations.
+The main class that orchestrates crawling, content extraction, and file storage.
 
 #### Constructor
 
 ```typescript
-new ScrapperServices(website: string, depth?: number, customPath?: string)
+new Scraper(website: string, options?: ScraperOptions)
 ```
 
 **Parameters:**
 - `website` (string): The base URL of the website to scrape
-- `depth` (number, optional): Maximum depth to crawl (0 = unlimited, default: 0)
-- `customPath` (string, optional): Custom output directory path (default: `~/knowledgeBase`)
+- `options` (ScraperOptions, optional):
+  - `depth` (number): Maximum depth relative to base URL (-1 = infinite, default: -1)
+  - `format` ("md" | "json" | "csv"): Output format (default: "md")
+  - `delay` (number): Milliseconds between requests (default: 0)
+  - `outputPath` (string): Output directory (default: ~/knowledgeBase)
+  - `tags` (string): Comma-separated tags/selectors to extract (default: all)
+  - `selectors` (string[]): Additional CSS selectors for extra CSV output
 
 #### Methods
 
-##### `bfsScrape(endpoint?: string, results?: string[], visited?: Record<string, boolean>): Promise<void>`
-
+##### `bfs(endpoint?: string): Promise<string[]>`
 Crawls the website using Breadth-First Search algorithm.
 
-**Parameters:**
-- `endpoint` (string): Starting path (default: "/")
-- `results` (string[]): Array to collect visited endpoints
-- `visited` (Record<string, boolean>): Object to track visited URLs
-
-##### `dfsScrape(endpoint?: string, results?: string[], visited?: Record<string, boolean>): Promise<void>`
-
+##### `dfs(endpoint?: string): Promise<string[]>`
 Crawls the website using Depth-First Search algorithm.
 
-**Parameters:**
-- `endpoint` (string): Starting path (default: "/")
-- `results` (string[]): Array to collect visited endpoints
-- `visited` (Record<string, boolean>): Object to track visited URLs
+##### `close(): Promise<void>`
+Closes the browser and cleans up all resources.
 
-##### `buildFilePath(endpoint: string): string`
+### `ContentExtractor`
 
-Generates a file path for storing screenshots.
+Extracts structured content from a Playwright Page instance.
 
-##### `buildContentPath(endpoint: string): string`
+```typescript
+import { ContentExtractor } from '@harshvz/crawler';
 
-Generates a file path for storing extracted content.
+const extractor = new ContentExtractor(page);
+const details = await extractor.getBasicDetails();
+const content = await extractor.getStructuredContent('h1, p, a');
+```
 
-##### `getLinks(page: Page): Promise<string[]>`
+#### Methods
+- `getBasicDetails()` — Returns title, description, robots, OG/Twitter metadata
+- `getStructuredContent(customSelector?)` — Extracts all content with attributes (href on links, src/alt on images)
+- `getContentBySelectors(selectors[])` — Extracts text from custom CSS selectors
+- `toJson(data)` — Format as JSON string
+- `toMarkdown(metadata, content)` — Format as Markdown string
+- `toCsv(data)` — Format as CSV string
 
-Extracts all internal links from the current page.
+### `FileService`
+
+Handles file output with automatic directory creation.
+
+```typescript
+import { FileService } from '@harshvz/crawler';
+
+const fs = new FileService('./output');
+fs.saveJson(url, endpoint, data);
+fs.saveMarkdown(url, endpoint, content);
+fs.saveCsv(url, endpoint, content);
+```
 
 ## ⚙️ Configuration
 
-### Timeout
+### Output Format
 
-The default timeout for page navigation is **60 seconds**. You can modify this by editing the `timeout` property in the `ScrapperServices` class:
+Choose between `md`, `json`, or `csv`. Each format includes:
+- **Markdown** (`.md`): Rich text with headings, links, and images
+- **JSON** (`.json`): Full structured data with metadata and content arrays
+- **CSV** (`.csv`): Tabular format with tag, text, href, src, and alt columns
+
+### Custom Tags/Selectors
+
+By default, all content tags are extracted (h1-h6, p, a, img, li, code, pre, etc.).
+You can limit extraction to specific tags or CSS selectors:
 
 ```typescript
-const scraper = new ScrapperServices('https://example.com');
-scraper.timeout = 30000; // 30 seconds
+const scraper = new Scraper('https://example.com', {
+  tags: 'h1, .product-title, a.product-link, img',
+});
 ```
+
+### Request Delay
+
+Set a delay between requests to avoid rate-limiting:
+
+```typescript
+const scraper = new Scraper('https://example.com', {
+  delay: 500, // 500ms between each page visit
+});
+```
+
+### Depth Control
+
+Depth is calculated **relative** to the base URL's pathname. If your base URL is `https://site.com/blog/post/`, then `/blog/post/1` is depth 1 and `/blog/post/1/2` is depth 2.
 
 ### Storage Location
 
@@ -204,66 +250,73 @@ Each website gets its own folder based on its hostname.
 ```
 ~/knowledgeBase/
 └── examplecom/
-    ├── home.png                 # Screenshot of homepage
     ├── home.md                  # Extracted content from homepage
-    ├── _about.png              # Screenshot of /about page
+    ├── home.json                # (if json format selected)
+    ├── home.csv                 # (if csv format selected)
     ├── _about.md               # Extracted content from /about
-    ├── _contact.png            # Screenshot of /contact page
     └── _contact.md             # Extracted content from /contact
 ```
 
-### Content File Format (.md)
+### Content Details
 
-Each `.md` file contains:
-1. **JSON metadata** (first line):
-   - Page title
-   - Meta description
-   - Robots directives
-   - Open Graph tags
-   - Twitter Card tags
-2. **Extracted text content** (subsequent lines):
-   - All text from h1-h6, p, and span elements
+Each file includes:
+- Page title and URL
+- Meta description
+- Open Graph tags
+- Twitter Card tags
+- Extracted text content (with href on links and src/alt on images)
+- Robots directives
 
 ## 📖 Examples
 
 ### Example 1: Basic Usage
 
 ```typescript
-import ScrapperServices from '@harshvz/crawler';
+import Scraper from '@harshvz/crawler';
 
-const scraper = new ScrapperServices('https://docs.example.com');
-await scraper.bfsScrape('/');
+const scraper = new Scraper('https://docs.example.com');
+await scraper.bfs('/');
+await scraper.close();
 ```
 
-### Example 2: Limited Depth Crawl
+### Example 2: Limited Depth Crawl with Delay
 
 ```typescript
-const scraper = new ScrapperServices('https://blog.example.com', 2);
-await scraper.dfsScrape('/');
-// Only crawls 2 levels deep from the starting page
+const scraper = new Scraper('https://blog.example.com', {
+  depth: 2,
+  delay: 1000,
+});
+await scraper.dfs('/');
+await scraper.close();
 ```
 
-### Example 3: Custom Endpoint
+### Example 3: JSON Output with Custom Selectors
 
 ```typescript
-const scraper = new ScrapperServices('https://example.com');
-const results = [];
-const visited = {};
-await scraper.bfsScrape('/docs', results, visited);
-console.log(`Scraped ${results.length} pages`);
+const scraper = new Scraper('https://example.com', {
+  format: 'json',
+  tags: 'h1, h2, p, img',
+});
+await scraper.bfs('/');
+await scraper.close();
 ```
 
 ### Example 4: Custom Output Directory
 
 ```typescript
-const scraper = new ScrapperServices(
-    'https://example.com',
-    0,  // No depth limit
-    '/custom/output/path'  // Custom save location
-);
-await scraper.bfsScrape('/');
-// Files will be saved to /custom/output/path instead of ~/knowledgeBase
+const scraper = new Scraper('https://example.com', {
+  depth: -1,
+  outputPath: '/custom/output/path',
+});
+await scraper.bfs('/');
+await scraper.close();
 ```
+
+## ⚠️ Limitations
+
+- **No screenshots**: Obscura is a lightweight headless-only browser — screenshot capture is not supported
+- **Sequential crawling**: Pages are processed one at a time (concurrent crawling not yet implemented)
+- **In-memory queue**: Queue is held in memory — very large crawls may exhaust available RAM
 
 ## 🔧 Development
 
@@ -275,16 +328,9 @@ await scraper.bfsScrape('/');
 ### Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/harshvz/crawler.git
-
-# Navigate to directory
 cd crawler
-
-# Install dependencies
 npm install
-
-# Run in development mode
 npm run dev
 ```
 
@@ -295,7 +341,10 @@ crawler/
 ├── src/
 │   ├── index.ts                    # CLI entry point
 │   └── Services/
-│       └── ScrapperServices.ts     # Main scraping logic
+│       ├── Scraper.ts              # Main orchestrator (crawling logic)
+│       ├── ContentExtractor.ts     # Page content extraction
+│       ├── FileService.ts          # Output file storage
+│       └── BrowserService.ts       # Browser lifecycle & stealth
 ├── dist/                           # Compiled JavaScript
 ├── package.json
 ├── tsconfig.json
@@ -326,7 +375,8 @@ ISC © Harshvz
 
 ## 🙏 Acknowledgments
 
-- Built with [Playwright](https://playwright.dev/)
+- Built with [Obscura](https://obscura.net/) — lightweight headless browser via CDP
+- Browser automation by [Playwright](https://playwright.dev/)
 - CLI powered by [Inquirer.js](https://github.com/SBoudrias/Inquirer.js)
 
 ---

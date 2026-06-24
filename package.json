@@ -1,6 +1,6 @@
 {
     "name": "@harshvz/crawler",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "A powerful web scraping tool built with Playwright that crawls websites using BFS or DFS algorithms, captures screenshots, and extracts content",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -10,11 +10,10 @@
         "crawler": "./dist/index.js"
     },
     "scripts": {
-        "dev": "nodemon --watch src --exec node --loader ts-node/esm src/index.ts",
+        "dev": "tsx watch src/index.ts",
         "build": "tsc",
         "start": "node dist/index.js",
         "prepublishOnly": "npm run build",
-        "postinstall": "playwright install chromium",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [
@@ -30,7 +29,8 @@
         "web-crawler",
         "content-extraction",
         "seo",
-        "metadata"
+        "metadata",
+        "obscura"
     ],
     "author": {
         "name": "Harsh",
@@ -56,12 +56,13 @@
     "devDependencies": {
         "@types/yargs": "^17.0.35",
         "nodemon": "^3.1.11",
-        "ts-node": "^10.9.2",
+        "tsx": "^4.22.4",
         "typescript": "^5.9.3"
     },
     "dependencies": {
         "inquirer": "^13.2.0",
-        "playwright": "^1.57.0",
+        "obscura-node": "^1.0.2",
+        "playwright-core": "^1.61.1",
         "yargs": "^18.0.0"
     }
 }
