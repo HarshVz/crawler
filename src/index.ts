@@ -1,26 +1,26 @@
 #!/usr/bin/env node
-import ScrapperServices from "./Services/ScrapperServices.js"
-import inquirer from 'inquirer';
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-import os from 'os';
+import ScrapperServices from "./Services/ScrapperServices.js";
+import inquirer from "inquirer";
+import { readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+import os from "os";
 
 // Get version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(
-    readFileSync(join(__dirname, '../package.json'), 'utf-8')
+  readFileSync(join(__dirname, "../package.json"), "utf-8"),
 );
 
 // Check for --version or -v flag
-if (process.argv.includes('--version') || process.argv.includes('-v')) {
-    console.log(`v${packageJson.version}`);
-    process.exit(0);
+if (process.argv.includes("--version") || process.argv.includes("-v")) {
+  console.log(`v${packageJson.version}`);
+  process.exit(0);
 }
 
 // Check for --help or -h flag
-if (process.argv.includes('--help') || process.argv.includes('-h')) {
-    console.log(`
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(`
 @harshvz/crawler v${packageJson.version}
 
 A powerful web scraping tool built with Playwright
@@ -46,120 +46,154 @@ Examples:
 For more information, visit:
 https://github.com/harshvz/crawler
     `);
-    process.exit(0);
+  process.exit(0);
 }
 
-inquirer.prompt([
+inquirer
+  .prompt([
     {
-        type: 'input',
-        name: 'url',
-        message: 'Enter URL to scrape: ',
-        validate: (input) => {
-            if (!input) {
-                return 'Please enter a URL';
-            }
-            try {
-                new URL(input);
-                return true;
-            } catch {
-                return 'Please enter a valid URL';
-            }
+      type: "input",
+      name: "url",
+      message: "Enter URL to scrape: ",
+      validate: (input) => {
+        if (!input) {
+          return "Please enter a URL";
         }
+        try {
+          new URL(input);
+          return true;
+        } catch {
+          return "Please enter a valid URL";
+        }
+      },
     },
     {
-        type: 'input',
-        name: 'depth',
-        message: 'Enter depth to scrape (-1 for infinite): ',
-        default: '-1',
-        validate: (input) => {
-            if (!input && typeof input !== 'number') {
-                return 'Please enter a depth';
-            }
-            if (Number(input) < -1) {
-                return 'Please enter a valid depth';
-            }
-            return true;
+      type: "input",
+      name: "depth",
+      message: "Enter depth to scrape (-1 for infinite): ",
+      default: "-1",
+      validate: (input) => {
+        if (!input && typeof input !== "number") {
+          return "Please enter a depth";
         }
+        if (Number(input) < -1) {
+          return "Please enter a valid depth";
+        }
+        return true;
+      },
     },
     {
-        type: 'input',
-        name: 'algo',
-        message: 'Enter algorithm to use (bfs or dfs): ',
-        default: 'bfs',
-        validate: (input) => {
-            if (!input) {
-                return 'Please enter an algorithm';
-            }
-            if (input !== 'bfs' && input !== 'dfs') {
-                return 'Please enter either "bfs" or "dfs"';
-            }
-            return true;
+      type: "input",
+      name: "algo",
+      message: "Enter algorithm to use (bfs or dfs): ",
+      default: "bfs",
+      validate: (input) => {
+        if (!input) {
+          return "Please enter an algorithm";
         }
+        if (input !== "bfs" && input !== "dfs") {
+          return 'Please enter either "bfs" or "dfs"';
+        }
+        return true;
+      },
     },
     {
-        type: 'input',
-        name: 'format',
-        message: 'Enter format to use (json or md): ',
-        default: 'md',
-        validate: (input) => {
-            if (!input) {
-                return 'Please enter a format';
-            }
-            if (input !== 'json' && input !== 'md') {
-                return 'Please enter either "json" or "md"';
-            }
-            return true;
-        }
+      type: "confirm",
+      name: "screenshot",
+      message: "Should I include screenshots?",
+      default: false,
     },
     {
-        type: 'input',
-        name: 'outputPath',
-        message: 'Enter output directory (press Enter for default): ',
-        default: join(os.homedir(), 'knowledgeBase'),
-        validate: (input) => {
-            if (!input) {
-                return 'Please enter a path or press Enter for default';
-            }
-            return true;
+      type: "input",
+      name: "selectors",
+      message: "Enter classes and IDs to extract (comma separated)",
+      default: "",
+      validate: (input: string) => {
+        if (!input || input.trim().length === 0) {
+          return "Please enter at least one selector";
         }
-    }
-
-]).then(async (answers) => {
+        return true;
+      },
+      filter: (input: string) => {
+        return input
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      },
+    },
+    {
+      type: "input",
+      name: "format",
+      message: "Enter format to use (json or md): ",
+      default: "md",
+      validate: (input) => {
+        if (!input) {
+          return "Please enter a format";
+        }
+        if (input !== "json" && input !== "md") {
+          return 'Please enter either "json" or "md"';
+        }
+        return true;
+      },
+    },
+    {
+      type: "input",
+      name: "outputPath",
+      message: "Enter output directory (press Enter for default): ",
+      default: join(os.homedir(), "knowledgeBase"),
+      validate: (input) => {
+        if (!input) {
+          return "Please enter a path or press Enter for default";
+        }
+        return true;
+      },
+    },
+  ])
+  .then(async (answers) => {
     console.log("-".repeat(20));
     console.log("Scraping started");
     console.log(`URL: ${answers.url}`);
+    console.log(`Screenshots: ${answers.screenshot}`);
     console.log(`Algorithm: ${answers.algo.toUpperCase()}`);
+    console.log(`Selectors : ${answers.selectors}`);
     console.log(`Format: ${answers.format.toUpperCase()}`);
     console.log(`Depth: ${answers.depth}`);
     console.log(`Output: ${answers.outputPath}`);
     console.log("-".repeat(20));
 
-    const scrapper = new ScrapperServices(answers.url, Number(answers.depth), answers.outputPath, answers.format);
+    const scrapper = new ScrapperServices(
+      answers.url,
+      Number(answers.depth),
+      answers.outputPath,
+      answers.format,
+      answers.screenshot,
+      answers.selectors,
+    );
 
     try {
-        const url = new URL(answers.url);
-        if (answers.algo === 'bfs') await scrapper.bfsScrape(url.pathname);
-        else await scrapper.dfsScrape(url.pathname);
+      const url = new URL(answers.url);
+      if (answers.algo === "bfs") await scrapper.bfsScrape(url.pathname);
+      else await scrapper.dfsScrape(url.pathname);
 
-        console.log("-".repeat(20));
-        console.log("Scraping completed successfully!");
-        console.log(`Files saved to: ${answers.outputPath}`);
-        console.log("-".repeat(20));
-        process.exit(0);
+      console.log("-".repeat(20));
+      console.log("Scraping completed successfully!");
+      console.log(`Files saved to: ${answers.outputPath}`);
+      console.log("-".repeat(20));
+      process.exit(0);
     } catch (e) {
-        console.error(e);
-        console.log("-".repeat(20));
-        console.log("Scraping failed");
-        console.log("-".repeat(20));
-        process.exit(1);
+      console.error(e);
+      console.log("-".repeat(20));
+      console.log("Scraping failed");
+      console.log("-".repeat(20));
+      process.exit(1);
     }
-
-}).catch((error) => {
+  })
+  .catch((error) => {
     console.error(error);
     console.log("-".repeat(20));
     console.log("❌ Prompt failed");
     console.log("-".repeat(20));
     process.exit(1);
-})
+  });
 
 export default ScrapperServices;
